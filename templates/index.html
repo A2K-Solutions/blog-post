@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load widget_tweaks %}
+
+{% block main %}
+    <body id="page-top" data-spy="scroll" data-target=".side-menu">
+    <nav class="side-menu">
+        <ul>
+            <li class="hidden active">
+                <a class="page-scroll" href="#page-top"></a>
+            </li>
+            <li>
+                <a href="#" class="page-scroll">
+                    <span class="menu-title">Search</span>
+                    <span class="dot" onclick="toggleSearchBar()"></span>
+                </a>
+                <div id="searchBar" style="display: none;">
+                    <form method="GET" action="{% url 'search' %}">
+                        {% csrf_token %}
+                        <div class="search-container">
+                            <div class="input-group "style="display: flex;">
+                                <div class="form-outline">
+                                    <input type="text" name="search_query" id="form1" class="form-control"
+                                           placeholder="Search"/>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa fa-search" aria-hidden="true"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </li>
+            <li>
+                <a href="{% url 'home' %}" class="page-scroll">
+                    <span class="menu-title">Home</span>
+                    <span class="dot"></span>
+                </a>
+            </li>
+            <li>
+                <a href="#blogs" class="page-scroll">
+                    <span class="menu-title">Blogs</span>
+                    <span class="dot"></span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'my-blogs' %}" class="page-scroll">
+                    <span class="menu-title">My Blogs</span>
+                    <span class="dot"></span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'logout_user' %}" class="page-scroll">
+                    <span class="menu-title">Logout</span>
+                    <span class="dot"></span>
+                </a>
+            </li>
+
+        </ul>
+    </nav>
+    <div class="container-fluid">
+
+    </div>
+    <div class="container">
+        <!-- Start: Desc -->
+        <div class="row me-row content-ct">
+            <h2 class="row-title">Why This Event Is Super Cool?</h2>
+            <div class="col-md-4 feature">
+                <span class="ti-ticket"></span>
+                <h3>Buy Early Bird Tickets</h3>
+                <p>Super cool discounts if you purchase early bird tickets now. Limited tickets available with some
+                    awesome
+                    perks and goodies!</p>
+            </div>
+            <div class="col-md-4 feature">
+                <span class="ti-microphone"></span>
+                <h3>Expert Speakers</h3>
+                <p>Best in class expert speakers who have extensive knowledge of the topic. All speakers are curated by
+                    the
+                    panel of experts.</p>
+            </div>
+            <div class="col-md-4 feature">
+                <span class="ti-world"></span>
+                <h3>People around the globe!</h3>
+                <p>Meet the people attending this event around the globe. This will be the best opportunity to meet and
+                    greet people from your industry.</p>
+            </div>
+        </div>
+        <!-- End: Desc -->
+
+        <!-- Start: Speakers -->
+        <h2 class="row-title">Blogs by Author</h2>
+
+        <div id="blogs">
+            <div class="row me-row content-ct speaker">
+                {% for blog_post in blog_posts %}
+                    <div class="col-md-4 col-sm-6 feature">
+                        <img src="{% static 'img/speaker-1.png' %}" class="speaker-img">
+                        <h3>{{ blog_post.title }}</h3>
+                        <h2>{{ blog_post.author }}</h2>
+                        <p>Created at: {{ blog_post.created_at }}</p>
+                        <p>{{ blog_post.content | truncatechars:300 | safe }}</p>
+                        <ul>
+                            <li><a href="{{ blog_post.get_absolute_url }}">Read more</a></li>
+                        </ul>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+{% endblock %}

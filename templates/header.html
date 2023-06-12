@@ -1,0 +1,17 @@
+{% load static %}
+
+
+
+<!-- Start: Header -->
+<div class="row hero-header" id="home">
+    <div class="col-md-7">
+        <h1>Blogg a site where you can easily write a blog on any topic</h1>
+        <h3>Dive into the Blogosphere!</h3>
+        <a href="{% url 'create-blog' %}" class="btn btn-lg btn-red">Write a Blog <span class="ti-arrow-right"></span></a>
+
+    </div>
+    <div class="col-md-5 hidden-xs">
+        <img src="{% static 'img/rocket.png' %}" class="rocket animated bounce">
+    </div>
+</div>
+<!-- End: Header -->
