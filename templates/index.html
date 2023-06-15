@@ -4,8 +4,13 @@
 
 {% block main %}
     <body id="page-top" data-spy="scroll" data-target=".side-menu">
+
     <nav class="side-menu">
+
         <ul>
+            <button type="text" class="btn-red" style="float: right;list-style: none!important;padding: 3px 14px 3px 14px;border: none;font-family: 'Dosis', sans-serif;">Menu
+            </button>
+            <br>
             <li class="hidden active">
                 <a class="page-scroll" href="#page-top"></a>
             </li>
@@ -18,7 +23,7 @@
                     <form method="GET" action="{% url 'search' %}">
                         {% csrf_token %}
                         <div class="search-container">
-                            <div class="input-group "style="display: flex;">
+                            <div class="input-group " style="display: flex;">
                                 <div class="form-outline">
                                     <input type="text" name="search_query" id="form1" class="form-control"
                                            placeholder="Search"/>
@@ -46,6 +51,18 @@
             <li>
                 <a href="{% url 'my-blogs' %}" class="page-scroll">
                     <span class="menu-title">My Blogs</span>
+                    <span class="dot"></span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'user-profile' %}" class="page-scroll">
+                    <span class="menu-title">User Profile</span>
+                    <span class="dot"></span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'change-password' %}" class="page-scroll">
+                    <span class="menu-title">Change Password</span>
                     <span class="dot"></span>
                 </a>
             </li>
@@ -95,11 +112,15 @@
             <div class="row me-row content-ct speaker">
                 {% for blog_post in blog_posts %}
                     <div class="col-md-4 col-sm-6 feature">
-                        <img src="{% static 'img/speaker-1.png' %}" class="speaker-img">
+                        {% if blog_post.author.userprofile.profile_picture %}
+                            <img src="{{ blog_post.author.userprofile.profile_picture.url }}" class="speaker-img">
+                        {% else %}
+                            <img src="{% static 'img/speaker-1.png' %}" class="speaker-img">
+                        {% endif %}
                         <h3>{{ blog_post.title }}</h3>
                         <h2>{{ blog_post.author }}</h2>
                         <p>Created at: {{ blog_post.created_at }}</p>
-                        <p>{{ blog_post.content | truncatechars:300 | safe }}</p>
+                        <p>{{ blog_post.short_description | truncatechars:40 | safe }}</p>
                         <ul>
                             <li><a href="{{ blog_post.get_absolute_url }}">Read more</a></li>
                         </ul>
@@ -107,6 +128,7 @@
                 {% endfor %}
             </div>
         </div>
+
 
     </div>
 {% endblock %}

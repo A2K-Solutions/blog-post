@@ -3,5 +3,6 @@ from .models import *
 
 # Register your models here.
 admin.site.register(BlogPost)
+admin.site.register(UserProfile)
 admin.site.register(Comment)
 

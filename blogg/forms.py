@@ -19,7 +19,7 @@ class BlogForm(forms.ModelForm):
 
     class Meta:
         model = BlogPost
-        fields = ['title', 'content']
+        fields = ['title', 'short_description', 'content']
 
     def save(self, draft=False, commit=True, *args, **kwargs):
         instance = super().save(commit=False)
@@ -47,5 +47,33 @@ class CommentForm(forms.ModelForm):
         model = Comment
         fields = ['content']
 
+
 class SearchForm(forms.Form):
     search_query = forms.CharField(label='Search', max_length=100)
+
+
+class EmailForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['email']
+
+
+class CodeForm(forms.Form):
+    code = forms.IntegerField(help_text="Enter 4 digit verification code")
+
+
+class ResetPasswordForm(forms.Form):
+    new_password = forms.CharField(max_length=100, required=True)
+    confirm_password = forms.CharField(max_length=100, required=True)
+
+
+class ChangePasswordForm(forms.Form):
+    old_password = forms.CharField(max_length=100, required=True)
+    new_password = forms.CharField(max_length=100, required=True)
+    confirm_password = forms.CharField(max_length=100, required=True)
+
+
+class UserProfileForm(forms.ModelForm):
+    class Meta:
+        model = UserProfile
+        fields = ['profile_picture']

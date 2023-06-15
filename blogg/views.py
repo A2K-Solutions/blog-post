@@ -1,9 +1,16 @@
+import os
+from random import randint
+from django.db import IntegrityError
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.hashers import check_password
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import *
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
+from django.core.mail import send_mail
+from django.contrib.auth import get_user_model
 
 
 # Create your views here.
@@ -20,6 +27,66 @@ def home(request):
     form = BlogForm(request=request)
     context = {'blog_posts': published_posts, 'form': form}
     return render(request, 'index.html', context)
+
+
+def random_digits(digits_len=4):
+    """
+        Generate a random integer with the specified number of digits.
+
+        This function generates a random integer with the specified number of digits. By default, it generates a 4-digit random
+        integer. The range of possible random integers is determined based on the number of digits specified. The generated
+        integer is inclusive of the lower range start and exclusive of the upper range end.
+
+        Parameters:
+            digits_len (int): The number of digits in the generated random integer. Default is 4.
+
+        Returns:
+            int: A random integer with the specified number of digits.
+        """
+    range_start = 10 ** (digits_len - 1)
+    range_end = (10 ** digits_len) - 1
+    return randint(range_start, range_end)
+
+
+def verification_code(request, email=None):
+    """
+        Process the verification code form and validate the entered code.
+
+        This function handles the verification code form submission. If the form is submitted via POST and is valid, it retrieves
+        the entered verification code and the corresponding user's email address. It checks if the verification code matches the
+        one stored in the user's profile. If the code matches, a new random verification code is generated and saved in the user's
+        profile, and the user is redirected to the reset password page. If the code does not match or there is no user with the
+        provided email address, an error message is displayed.
+
+        Parameters:
+            request (HttpRequest): The HTTP request object representing the incoming request from the user.
+            email (str, optional): The email address associated with the user. Defaults to None.
+
+        Returns:
+            HttpResponse: A redirect response to the reset password page if the verification code is valid. Otherwise, renders
+                          the 'verification_code' template with the verification code form.
+
+        """
+    if request.method == "POST":
+        codeform = CodeForm(request.POST or None)
+        if codeform.is_valid():
+            try:
+                user = User.objects.get(email=email)
+                user_profile = UserProfile.objects.get(user=user)
+                verification_code = user_profile.verification_code
+                code = request.POST.get('code')
+                if verification_code == code:
+                    user_profile.verification_code = random_digits()
+                    user_profile.save()
+                    return redirect('reset-password', email)
+            except User.DoesNotExist:
+                messages.error(request, "There is no user with this Email ID.")
+    form = CodeForm()
+    context = {'form': form}
+    return render(request, 'verification_code.html', context)
+
+
+User = get_user_model()
 
 
 def user_register(request):
@@ -42,8 +109,22 @@ def user_register(request):
             if form.is_valid():
                 user = form.save()
                 full_name = user.get_full_name()
+
+                verification_code = random_digits()
+                try:
+                    user_profile = UserProfile.objects.get(user=user)
+                    user_profile.verification_code = verification_code
+                    user_profile.save()
+                except UserProfile.DoesNotExist:
+                    user_profile = UserProfile.objects.create(user=user, verification_code=verification_code)
+                except IntegrityError as e:
+                    user.delete()
+                    messages.error(request, "An error occurred during registration. Please try again.")
+                    return redirect('user-register')
+
                 messages.success(request, f"Account successfully created for {full_name}")
                 return redirect('user-login')
+
         context = {'form': form}
         return render(request, 'user_register.html', context)
 
@@ -322,3 +403,113 @@ def search_blogs(request):
     }
 
     return render(request, 'searched_blogs.html', context)
+
+
+def email(request):
+    """
+        Process the email form and send the verification code.
+
+        This function handles the email form submission. If the form is submitted via POST and is valid, it retrieves the entered
+        email address and attempts to find a user associated with that email address. If a user is found, it retrieves the
+        verification code from the user's profile and sends an email to the provided email address with the verification code.
+        The user is then redirected to a verification code page. If no user is found with the provided email address, an error
+        message is displayed.
+
+        Parameters:
+            request (HttpRequest): The HTTP request object representing the incoming request from the user.
+
+        Returns:
+            HttpResponse: A redirect response to the verification code page if the form submission is successful. Otherwise,
+                          renders the 'email_form' template with the email form.
+
+        """
+    if request.method == "POST":
+        emailform = EmailForm(request.POST or None)
+        if emailform.is_valid():
+            email = request.POST.get('email')
+            user_email = User.objects.filter(email=email).last()
+            user_profile = UserProfile.objects.get(user=user_email)
+            verification_code = user_profile.verification_code
+            if user_email is not None:
+                context = f"""
+                            Your verification code to change password is {verification_code}"""
+                send_mail(
+                    'Contact Form Received!',
+                    context,
+                    'tm825141@gmail.com',
+                    [email],
+                    fail_silently=False,
+                )
+                return redirect('verification-code', email)
+            else:
+                messages.error(request, "There is no user with this Email ID.")
+    form = EmailForm()
+    context = {
+        'form': form
+    }
+    return render(request, 'email_form.html', context)
+
+
+def reset_password(request, email=None):
+    if request.method == "POST":
+        password_form = ResetPasswordForm(request.POST or None)
+        if password_form.is_valid():
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
+
+            if new_password == confirm_password:
+                user = User.objects.get(email=email)
+                user.set_password(new_password)
+                user.save()
+                return redirect('user-login')
+            else:
+                messages.error(request, "Passwords are not same.")
+
+    form = ResetPasswordForm()
+    context = {
+        'form': form
+    }
+    return render(request, 'forgot_password.html', context)
+
+
+@login_required(login_url='user-login')
+def change_password(request):
+    if request.method == "POST":
+        user = request.user
+        current_password = request.user.password
+        changeform = ChangePasswordForm(request.POST or None)
+
+        if changeform.is_valid():
+            old_password = request.POST.get('old_password')
+            new_password = request.POST.get('new_password')
+            confirm_password = request.POST.get('confirm_password')
+            matcheck = check_password(old_password, current_password)
+
+            if matcheck:
+                if new_password == confirm_password:
+                    user.set_password(new_password)
+                    user.save()
+                    return redirect('home')
+
+    form = ChangePasswordForm()
+    context = {
+        'form': form
+    }
+    return render(request, 'change_password.html', context)
+
+
+def user_profile(request):
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=request.user.userprofile)
+        if form.is_valid():
+            # Remove the existing profile picture
+            if form.cleaned_data['profile_picture'] and form.cleaned_data['profile_picture'].name != 'default.jpg':
+                default_picture_path = os.path.join(settings.MEDIA_ROOT, 'profile_pics', 'default.jpg')
+                if os.path.exists(default_picture_path):
+                    os.remove(default_picture_path)
+
+            form.save()
+            return redirect('user-profile')
+    else:
+        form = UserProfileForm(instance=request.user.userprofile)
+    return render(request, 'user_profile.html', {'form': form})

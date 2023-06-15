@@ -96,95 +96,98 @@
         <div class="row me-row content-ct speaker" id="blogs1">
             <h2>Draft Blogs</h2>
             {% for blog_post in draft_posts %}
-                <div class="col-md-4 col-sm-6">
-                    <div class="card">
-                        <div class="text-center">
-                            <img src="{% static 'img/speaker-1.png' %}" class="card-img-top speaker-img">
-                        </div>
-                        <div class="card-body">
-                            <h3 class="card-title">{{ blog_post.title }}</h3>
-                            <h2 class="card-title">{{ blog_post.author }}</h2>
-                            <p class="card-text">Created at: {{ blog_post.created_at }}</p>
-                            <p class="card-text">{{ blog_post.content | truncatechars:300 | safe }}</p>
-                            <ul class="list-inline">
+
+                <div class="col-md-4 col-sm-6 feature">
+                    <div class="card-body">
+                        {% if blog_post.author.userprofile.profile_picture %}
+                            <img src="{{ blog_post.author.userprofile.profile_picture.url }}" class="speaker-img">
+                        {% else %}
+                            <img src="{% static 'img/speaker-1.png' %}" class="speaker-img">
+                        {% endif %}
+                        <h3 class="card-title">{{ blog_post.title }}</h3>
+                        <h2 class="card-title">{{ blog_post.author }}</h2>
+                        <p class="card-text">Created at: {{ blog_post.created_at }}</p>
+                        <p>{{ blog_post.short_description | truncatechars:40 | safe }}</p>
+                        <ul class="list-inline">
+                            <li class="list-inline-item">
+                                <a href="{{ blog_post.get_absolute_url }}">Read more</a>
+                            </li>
+                            {% if blog_post.author == request.user %}
                                 <li class="list-inline-item">
-                                    <a href="{{ blog_post.get_absolute_url }}">Read more</a>
+                                    <a href="{% url 'edit-blog' slug=blog_post.slug %}">Edit</a>
                                 </li>
-                                {% if blog_post.author == request.user %}
-                                    <li class="list-inline-item">
-                                        <a href="{% url 'edit-blog' slug=blog_post.slug %}">Edit</a>
-                                    </li>
-                                    <li class="list-inline-item">
-                                        <a href="#" onclick="showConfirmation('{{ blog_post.slug }}')">Delete</a>
-                                    </li>
-                                {% endif %}
-                                {% if blog_post.author == request.user and blog_post.status == 'draft' %}
-                                    <li class="list-inline-item">
-                                        <a href="{% url 'publish-blog' slug=blog_post.slug %}">Publish</a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                            {% if blog_post.status == 'draft' %}
-                                <p class="card-text">Draft</p>
+                                <li class="list-inline-item">
+                                    <a href="#" onclick="showConfirmation('{{ blog_post.slug }}')">Delete</a>
+                                </li>
                             {% endif %}
-                        </div>
-                        <form id="deleteForm-{{ blog_post.slug }}" method="post"
-                              action="{% url 'delete-blog' slug=blog_post.slug %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="slug" value="{{ blog_post.slug }}">
-                        </form>
+                            {% if blog_post.author == request.user and blog_post.status == 'draft' %}
+                                <li class="list-inline-item">
+                                    <a href="{% url 'publish-blog' slug=blog_post.slug %}">Publish</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                        {% if blog_post.status == 'draft' %}
+                            <p class="card-text">Draft</p>
+                        {% endif %}
                     </div>
+                    <form id="deleteForm-{{ blog_post.slug }}" method="post"
+                          action="{% url 'delete-blog' slug=blog_post.slug %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="slug" value="{{ blog_post.slug }}">
+                    </form>
                 </div>
+
             {% empty %}
                 <p>No draft blogs available.</p>
             {% endfor %}
 
             <h2>Published Blogs</h2>
             {% for blog_post in published_posts %}
-                <div class="col-md-4 col-sm-6">
-                    <div class="card">
-                        <div class="text-center">
-                            <img src="{% static 'img/speaker-1.png' %}" class="card-img-top speaker-img">
-                        </div>
-                        <div class="card-body">
-                            <h3 class="card-title">{{ blog_post.title }}</h3>
-                            <h2 class="card-title">{{ blog_post.author }}</h2>
-                            <p class="card-text">Created at: {{ blog_post.created_at }}</p>
-                            <p class="card-text">{{ blog_post.content | truncatechars:300 | safe }}</p>
-                            <ul class="list-inline">
+                <div class="col-md-4 col-sm-6 feature">
+                    <div class="card-body">
+                        {% if blog_post.author.userprofile.profile_picture %}
+                            <img src="{{ blog_post.author.userprofile.profile_picture.url }}" class="speaker-img">
+                        {% else %}
+                            <img src="{% static 'img/speaker-1.png' %}" class="speaker-img">
+                        {% endif %}
+                        <h3 class="card-title">{{ blog_post.title }}</h3>
+                        <h2 class="card-title">{{ blog_post.author }}</h2>
+                        <p class="card-text">Created at: {{ blog_post.created_at }}</p>
+                        <p class="card-text">{{ blog_post.short_description | truncatechars:40 | safe }}</p>
+                        <ul class="list-inline">
+                            <li class="list-inline-item">
+                                <a href="{{ blog_post.get_absolute_url }}">Read more</a>
+                            </li>
+                            {% if blog_post.author == request.user %}
                                 <li class="list-inline-item">
-                                    <a href="{{ blog_post.get_absolute_url }}">Read more</a>
+                                    <a href="{% url 'edit-blog' slug=blog_post.slug %}">Edit</a>
                                 </li>
-                                {% if blog_post.author == request.user %}
-                                    <li class="list-inline-item">
-                                        <a href="{% url 'edit-blog' slug=blog_post.slug %}">Edit</a>
-                                    </li>
-                                    <li class="list-inline-item">
-                                        <a href="#" onclick="showConfirmation('{{ blog_post.slug }}')">Delete</a>
-                                    </li>
-                                {% endif %}
-                                {% if blog_post.author == request.user and blog_post.status == 'draft' %}
-                                    <li class="list-inline-item">
-                                        <a href="{% url 'publish-blog' slug=blog_post.slug %}">Publish</a>
-                                    </li>
-                                {% endif %}
-                            </ul>
-                            {% if blog_post.status == 'draft' %}
-                                <p class="card-text">Draft</p>
+                                <li class="list-inline-item">
+                                    <a href="#" onclick="showConfirmation('{{ blog_post.slug }}')">Delete</a>
+                                </li>
                             {% endif %}
-                        </div>
-                        <form id="deleteForm-{{ blog_post.slug }}" method="post"
-                              action="{% url 'delete-blog' slug=blog_post.slug %}">
-                            {% csrf_token %}
-                            <input type="hidden" name="slug" value="{{ blog_post.slug }}">
-                        </form>
+                            {% if blog_post.author == request.user and blog_post.status == 'draft' %}
+                                <li class="list-inline-item">
+                                    <a href="{% url 'publish-blog' slug=blog_post.slug %}">Publish</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                        {% if blog_post.status == 'draft' %}
+                            <p class="card-text">Draft</p>
+                        {% endif %}
                     </div>
+                    <form id="deleteForm-{{ blog_post.slug }}" method="post"
+                          action="{% url 'delete-blog' slug=blog_post.slug %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="slug" value="{{ blog_post.slug }}">
+                    </form>
                 </div>
             {% empty %}
                 <p>No published blogs available.</p>
             {% endfor %}
         </div>
     </div>
+
 
 
 

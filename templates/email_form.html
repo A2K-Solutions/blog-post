@@ -34,7 +34,7 @@
 <body>
 <div class="row">
     <div class="header" style="text-align: center;">
-        <h1 style="font-weight: bolder;color: #286090;">LOGIN</h1>
+        <h1 style="font-weight: bolder;color: #286090;">ENTER YOUR EMAIL</h1>
     </div>
 </div>
 <section class="vh-100 ">
@@ -49,35 +49,15 @@
                     {% csrf_token %}
                     <!-- Email input -->
                     <div class="form-outline  mb-4 ">
-                        <input type="text" name="username" placeholder="Username..."
+                        <input type="text" name="email" placeholder="Email..."
                                class="form-control form-control-lg"/>
 
                     </div>
 
-                    <!-- Password input -->
-                    <div class="form-outline  mb-4 " style="margin-top: 10px;">
-                        <input type="password" name="password" placeholder="Password..."
-                               class="form-control form-control-lg"/>
-                    </div>
 
 
                     <!-- Submit button -->
-                    <button type="submit" class="btn btn-primary btn-lg btn-block">Sign in</button>
-
-                    <div class="divider d-flex align-items-center my-4">
-                        <p class="text-center fw-bold mx-3 mb-0 text-muted">OR</p>
-                    </div>
-
-                    <a class="btn btn-primary btn-lg btn-block" style="background-color: #3b5998"
-                       href="{% url 'user-register' %}"
-                       role="button">
-                        <i class="fab fa-facebook-f me-2"></i>Sign Up
-                    </a>
-                    <a class="btn btn-primary btn-lg btn-block" style="background-color: #3b5998"
-                       href="{% url 'email-form' %}"
-                       role="button">
-                        <i class="fab fa-facebook-f me-2"></i>Forgot Password
-                    </a>
+                    <button type="submit" class="btn btn-primary btn-lg btn-block">Submit</button>
 
 
                 </form>
