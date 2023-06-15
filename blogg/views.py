@@ -90,15 +90,19 @@ User = get_user_model()
 
 
 def user_register(request):
-    """Handle user registration.
+    """
+    Handle user registration.
     If the user is already authenticated, they will be redirected to the home page.
     Otherwise, a registration form is displayed for the user to fill out.
     When a POST request is received with valid form data, a new user account is created and saved.
-    A success message is displayed, and the user is redirected to the login page.
+    If the user already has a UserProfile, the verification code is updated.
+    If the user does not have a UserProfile, a new UserProfile is created with the verification code.
+    If any error occurs during the registration process, the user account is deleted, an error message is displayed,
+    and the user is redirected back to the registration page.
+    Upon successful registration, a success message is displayed, and the user is redirected to the login page.
 
-    :param request: (HttpRequest): The HTTP request object representing the incoming request from the user.
-    :return:
-    HttpResponse: The rendered 'user_register.html' template with the context containing the form.
+    :param request: (HttpRequest) The HTTP request object representing the incoming request from the user.
+    :return: HttpResponse: The rendered 'user_register.html' template with the context containing the form.
     """
     if request.user.is_authenticated:
         return redirect('home')
@@ -451,6 +455,17 @@ def email(request):
 
 
 def reset_password(request, email=None):
+    """
+        Handle password reset.
+        If the request method is POST, validate the form data and reset the user's password.
+        If the form data is valid and the new password matches the confirmation password,
+        update the user's password and redirect to the login page.
+        If the passwords do not match, display an error message.
+
+        :param request: (HttpRequest) The HTTP request object representing the incoming request from the user.
+        :param email: (str) Optional. The email address associated with the user account for password reset.
+        :return: HttpResponse: The rendered 'forgot_password.html' template with the context containing the form.
+        """
     if request.method == "POST":
         password_form = ResetPasswordForm(request.POST or None)
         if password_form.is_valid():
@@ -474,6 +489,16 @@ def reset_password(request, email=None):
 
 @login_required(login_url='user-login')
 def change_password(request):
+    """
+        Handle password change.
+        If the request method is POST, validate the form data and change the user's password.
+        If the form data is valid and the old password matches the user's current password,
+        update the user's password with the new password and redirect to the home page.
+        If the old password does not match, display an error message.
+
+        :param request: (HttpRequest) The HTTP request object representing the incoming request from the user.
+        :return: HttpResponse: The rendered 'change_password.html' template with the context containing the form.
+        """
     if request.method == "POST":
         user = request.user
         current_password = request.user.password
@@ -499,6 +524,18 @@ def change_password(request):
 
 
 def user_profile(request):
+    """
+        Display and handle user profile.
+        If the request method is POST, validate the form data and update the user's profile.
+        If the form data is valid, save the form and update the user's profile picture.
+        If a new profile picture is uploaded, remove the existing profile picture from the file system.
+        Redirect to the user profile page after saving the form.
+
+        If the request method is GET, display the user profile form with the current user's data.
+
+        :param request: (HttpRequest) The HTTP request object representing the incoming request from the user.
+        :return: HttpResponse: The rendered 'user_profile.html' template with the context containing the form.
+        """
     if request.method == 'POST':
         form = UserProfileForm(request.POST, request.FILES, instance=request.user.userprofile)
         if form.is_valid():
